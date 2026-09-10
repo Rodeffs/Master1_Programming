@@ -1,0 +1,9 @@
+**/.idea
+**/cmake-build-debug
+**/build
+**/__pycache__
+**/.vs
+**/Release
+**/Debug
+*.ipynb_checkpoints
+
