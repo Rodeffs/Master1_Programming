@@ -8,10 +8,13 @@ from argparse import ArgumentParser
 
 def generate_time_series(parameters):
     n_points = parameters["n"]
+    dmins = parameters["m"]
     deviation = parameters["d"]
     trend_speed = parameters["ts"]
     trend_type = parameters["tt"]
     seasonality = parameters["s"]
+    period1 = parameters["p1"]
+    period2 = parameters["p2"]
     outliers = parameters["o"]
     gaps = parameters["g"]
     seed = parameters["seed"]
@@ -21,10 +24,10 @@ def generate_time_series(parameters):
 
     x = np.arange(n_points)
         
-    # Генерируем временные метки (каждые 5 мин, начиная с 00:00 сегодняшнего дня)
+    # Генерируем временные метки (начиная с 00:00 сегодняшнего дня)
     
     start_date = datetime.combine(date.today(), time())
-    dates = [(start_date + timedelta(minutes=5*i)) for i in range(n_points)]
+    dates = [(start_date + timedelta(minutes=dmins*i)) for i in range(n_points)]
 
     # Задаём шум через его стандартное отклонение
     
@@ -115,17 +118,15 @@ def generate_time_series(parameters):
 
     if seasonality == "one" or seasonality == "two":  # первая сезонная компонента
         amplitude = np.random.uniform(10, 30) # амплитуда
-        period = 12 # количество точек в периоде
         phase = np.random.uniform(0, 2*np.pi) # фаза
 
-        seasonal_component += amplitude * np.sin(2*np.pi*x/period + phase)  # синусоида
+        seasonal_component += amplitude * np.sin(2*np.pi*x/period1 + phase)  # синусоида
 
     if seasonality == "two":  # вторая сезонная компонента
         amplitude = np.random.uniform(20, 40) # амплитуда
-        period = 72 # количество точек в периоде
         phase = np.random.uniform(0, 2*np.pi) # фаза
 
-        seasonal_component += amplitude * np.sin(2*np.pi*x/period + phase)  # синусоида
+        seasonal_component += amplitude * np.sin(2*np.pi*x/period2 + phase)  # синусоида
         
     # Комбинируем все компоненты
     
@@ -215,10 +216,13 @@ def main():
     parser = ArgumentParser()
 
     parser.add_argument("-n", action="store", type=int, default=1000, help="the number of points in series, default is 1000")
+    parser.add_argument("-m", action="store", type=int, default=5, help="the timedelta in minutes, default is 5")
     parser.add_argument("-d", choices=["const", "grow", "decay", "random"], default="random", help="the deviation type, default is random")
     parser.add_argument("-ts", choices=["none", "fast_up", "slow_up", "fast_down", "slow_down", "random"], default="random", help="the trend speed, default is random")
     parser.add_argument("-tt", choices=["linear", "exponential", "quadratic", "logarithmic", "random"], default="random", help="the trend type, default is random")
-    parser.add_argument("-s", choices=["none", "one", "two", "random"], default="random", help="the seasonality type, default is random")
+    parser.add_argument("-s", choices=["none", "one", "two", "random"], default="random", help="the amount of seasonalities, default is random")
+    parser.add_argument("-p1", action="store", type=int, default=12, help="the period (amount of points) of the first seasonality, default is 12")
+    parser.add_argument("-p2", action="store", type=int, default=72, help="the period (amount of points) of the second seasonality, default is 72")
     parser.add_argument("-o", action="store", type=int, default=0, help="the number of outliers in series, default is 0")
     parser.add_argument("-g", action="store", type=int, default=0, help="the number of gaps in series, default is 0")
     parser.add_argument("--seed", action="store", type=int, default=None, help="the rng seed, default is none")
