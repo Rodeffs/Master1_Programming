@@ -135,7 +135,7 @@ def generate_time_series(parameters):
     # Добавляем выбросы и пропуски
     
     # Делаем так, чтобы они не накладывались друг на друга
-    outliers_gaps = np.random.choice(x, outliers+gaps, replace=True)  # replace позволяет избегать повторов
+    outliers_gaps = np.random.choice(x, outliers+gaps, replace=False)  # replace=False позволяет избегать повторов
 
     # Выброс - это всё, что либо меньше Q25 - 1.5 * (Q75 - Q25), либо больше Q75 + 1.5 * (Q75 - Q25)
     
