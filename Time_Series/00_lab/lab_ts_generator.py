@@ -132,29 +132,32 @@ def generate_time_series(parameters):
     
     values = noise + trend_component + seasonal_component
 
-    # Добавляем выбросы
+    # Добавляем выбросы и пропуски
+    
+    # Делаем так, чтобы они не накладывались друг на друга
+    outliers_gaps = np.random.choice(x, outliers+gaps, replace=True)  # replace позволяет избегать повторов
+
     # Выброс - это всё, что либо меньше Q25 - 1.5 * (Q75 - Q25), либо больше Q75 + 1.5 * (Q75 - Q25)
     
     Q75 = np.percentile(values, 75)
     Q25 = np.percentile(values, 25)
     IQR = Q75 - Q25
 
-    outliers_index = np.random.choice(x, outliers)
+    for i in range(outliers+gaps):
+        cur = outliers_gaps[i]
 
-    for i in outliers_index:
-        IQR_scale = np.random.uniform(1.6, 3.0)
-        outlier_rng = np.random.uniform(0, 1)
+        if i < outliers:  # добавляем выбосы
+            IQR_scale = np.random.uniform(1.6, 3.0)
+            outlier_rng = np.random.uniform(0, 1)
 
-        if outlier_rng <= 0.5:
-            values[i] = Q25 - IQR_scale * IQR
+            if outlier_rng <= 0.5:  # 50/50 положительный или отрицательный выброс
+                values[cur] = Q25 - IQR_scale * IQR
 
-        else:
-            values[i] = Q75 + IQR_scale * IQR
+            else:
+                values[cur] = Q75 + IQR_scale * IQR
 
-    # Добавляем пропуски
-
-    gaps_index = np.random.choice(x, gaps)
-    values[gaps_index] = np.nan
+        else:  # добавляем пропуски
+            values[cur] = np.nan
     
     return dates, values
 
